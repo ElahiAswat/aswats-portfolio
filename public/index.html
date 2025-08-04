@@ -34,6 +34,8 @@
       transform-style: preserve-3d;
       animation: none;
       user-select: none;
+      perspective: 500px;
+      overflow: visible;
     }
     li {
       position: absolute;
@@ -44,8 +46,15 @@
       color: #0f0;
       font-weight: 700;
       transform-style: preserve-3d;
-      transition: transform 0.5s ease, opacity 0.5s ease;
+      transition: transform 0.5s cubic-bezier(.77,0,.18,1), opacity 0.5s cubic-bezier(.77,0,.18,1);
       pointer-events: none;
+      opacity: 0.4;
+    }
+    li.center {
+      opacity: 1;
+      font-size: 2.2rem;
+      color: #0f0;
+      z-index: 2;
     }
     li span.type {
       font-size: 1rem;
@@ -106,53 +115,73 @@
 
     const list = document.getElementById("projectList");
     let currentIndex = 0;
+    const visibleCount = 5; // Number of items visible on the wheel
+    const itemAngle = 40; // Degrees between items (360/9 for 9 items, adjust for spacing)
 
     function render() {
-      list.innerHTML = ""; // Clear current list
-      
-      // Calculate indexes with wrap-around
-      const aboveIndex = (currentIndex - 1 + projects.length) % projects.length;
-      const belowIndex = (currentIndex + 1) % projects.length;
-
-      // Create above item
-      const above = document.createElement("li");
-      above.className = "above";
-      above.textContent = `${emojis[projects[aboveIndex].type]} ${projects[aboveIndex].name} `;
-      const spanAbove = document.createElement("span");
-      spanAbove.className = "type";
-      spanAbove.textContent = `(${projects[aboveIndex].type})`;
-      above.appendChild(spanAbove);
-
-      // Create center item
-      const center = document.createElement("li");
-      center.className = "center";
-      center.textContent = `${emojis[projects[currentIndex].type]} ${projects[currentIndex].name} `;
-      const spanCenter = document.createElement("span");
-      spanCenter.className = "type";
-      spanCenter.textContent = `(${projects[currentIndex].type})`;
-      center.appendChild(spanCenter);
-
-      // Create below item
-      const below = document.createElement("li");
-      below.className = "below";
-      below.textContent = `${emojis[projects[belowIndex].type]} ${projects[belowIndex].name} `;
-      const spanBelow = document.createElement("span");
-      spanBelow.className = "type";
-      spanBelow.textContent = `(${projects[belowIndex].type})`;
-      below.appendChild(spanBelow);
-
-      list.appendChild(above);
-      list.appendChild(center);
-      list.appendChild(below);
+      list.innerHTML = "";
+      const len = projects.length;
+      for (let i = 0; i < len; i++) {
+        // Calculate relative position
+        let rel = ((i - currentIndex + len) % len);
+        if (rel > len / 2) rel -= len; // Shortest path
+        // Only render visible items
+        if (Math.abs(rel) > Math.floor(visibleCount / 2)) continue;
+        const li = document.createElement("li");
+        li.textContent = `${emojis[projects[i].type]} ${projects[i].name} `;
+        const span = document.createElement("span");
+        span.className = "type";
+        span.textContent = `(${projects[i].type})`;
+        li.appendChild(span);
+        // 3D transform
+        const angle = rel * itemAngle;
+        const z = -60 * Math.abs(rel); // Depth
+        li.style.transform = `translateX(-50%) translateY(-50%) rotateX(${angle}deg) translateZ(${z}px)`;
+        li.style.top = "50%";
+        li.style.opacity = rel === 0 ? "1" : "0.4";
+        li.className = rel === 0 ? "center" : "";
+        list.appendChild(li);
+      }
     }
 
-    function rotate() {
-      currentIndex = (currentIndex + 1) % projects.length;
+    function rotate(dir = 1) {
+      currentIndex = (currentIndex + dir + projects.length) % projects.length;
       render();
     }
 
+    // Mouse/touch drag support
+    let startY = null;
+    let dragging = false;
+    list.addEventListener("mousedown", e => {
+      dragging = true;
+      startY = e.clientY;
+    });
+    document.addEventListener("mousemove", e => {
+      if (!dragging) return;
+      const delta = e.clientY - startY;
+      if (Math.abs(delta) > 30) {
+        rotate(delta > 0 ? 1 : -1);
+        startY = e.clientY;
+      }
+    });
+    document.addEventListener("mouseup", () => dragging = false);
+    // Touch support
+    list.addEventListener("touchstart", e => {
+      dragging = true;
+      startY = e.touches[0].clientY;
+    });
+    document.addEventListener("touchmove", e => {
+      if (!dragging) return;
+      const delta = e.touches[0].clientY - startY;
+      if (Math.abs(delta) > 30) {
+        rotate(delta > 0 ? 1 : -1);
+        startY = e.touches[0].clientY;
+      }
+    });
+    document.addEventListener("touchend", () => dragging = false);
+
     render();
-    setInterval(rotate, 2500);
+    setInterval(() => rotate(1), 2500);
 
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
