@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projects</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      color: #0f0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #project {
+      font-size: 2rem;
+      text-align: center;
+      animation: fade 1s ease-in-out;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 20px;
+      font-size: 0.9rem;
+      color: #0f0;
+    }
+
+    @keyframes fade {
+      0% { opacity: 0; transform: scale(0.98); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="project">Loading...</div>
+
+  <footer>
+    Developed by Aswat © <span id="year"></span>
+  </footer>
+
+  <script>
+    const projects = [
+      { name: "NeuralMesh CLI", type: "Software" },
+      { name: "Smart Irrigation Controller", type: "Hardware" },
+      { name: "CloudSync Dashboard", type: "Software" },
+      { name: "Wearable EEG Device", type: "Hardware" },
+    ];
+
+    const emojis = {
+      Software: "🧠",
+      Hardware: "🔩",
+    };
+
+    let current = 0;
+    const projectDiv = document.getElementById("project");
+
+    function rotateProject() {
+      const proj = projects[current];
+      projectDiv.innerHTML = `${emojis[proj.type]} ${proj.name} <span style="font-size: 1rem;">(${proj.type})</span>`;
+      current = (current + 1) % projects.length;
+    }
+
+    setInterval(rotateProject, 2500);
+    rotateProject(); // Show first immediately
+
+    // Set footer year
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+
+</body>
+</html>
