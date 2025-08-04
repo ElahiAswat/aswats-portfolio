@@ -1,5 +1,5 @@
-import RotatingProjects from '.components/RotatingProjects';
-import Footer from '.components/Footer';
+import RotatingProjects from './components/RotatingProjects';
+import Footer from './components/Footer';
 
 export default function Home() {
   return (
