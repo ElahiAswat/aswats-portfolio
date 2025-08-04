@@ -1,48 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Projects</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3D Drum Roll Projects</title>
   <style>
     body {
       margin: 0;
-      background-color: #000;
+      background: #000;
       color: #0f0;
       font-family: Arial, sans-serif;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      height: 100vh;
       justify-content: center;
       align-items: center;
+      perspective: 500px;
     }
-
-    #project {
-      font-size: 2rem;
+    #container {
+      height: 120px;
+      width: 300px;
+      position: relative;
+      overflow: visible;
+    }
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      height: 120px;
+      width: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: none;
+      user-select: none;
+    }
+    li {
+      position: absolute;
+      left: 50%;
+      width: 100%;
       text-align: center;
-      animation: fade 1s ease-in-out;
+      font-size: 2rem;
+      color: #0f0;
+      font-weight: 700;
+      transform-style: preserve-3d;
+      transition: transform 0.5s ease, opacity 0.5s ease;
+      pointer-events: none;
     }
-
+    li span.type {
+      font-size: 1rem;
+      opacity: 0.7;
+      margin-left: 8px;
+      font-weight: 400;
+    }
+    /* Positions for 3 items: above, center, below */
+    li.above {
+      top: 10px;
+      transform: translateX(-50%) translateZ(-60px) rotateX(30deg);
+      opacity: 0.5;
+      font-size: 1.3rem;
+      color: #0a0;
+    }
+    li.center {
+      top: 50%;
+      transform: translateX(-50%) translateY(-50%) translateZ(0) rotateX(0deg);
+      opacity: 1;
+      font-size: 2.2rem;
+      color: #0f0;
+    }
+    li.below {
+      top: 90px;
+      transform: translateX(-50%) translateZ(-60px) rotateX(-30deg);
+      opacity: 0.5;
+      font-size: 1.3rem;
+      color: #0a0;
+    }
     footer {
       position: absolute;
       bottom: 20px;
-      font-size: 0.9rem;
       color: #0f0;
-    }
-
-    @keyframes fade {
-      0% { opacity: 0; transform: scale(0.98); }
-      100% { opacity: 1; transform: scale(1); }
+      font-size: 0.9rem;
     }
   </style>
 </head>
 <body>
-
-  <div id="project">Loading...</div>
-
-  <footer>
-    Developed by Aswat © <span id="year"></span>
-  </footer>
+  <div id="container">
+    <ul id="projectList">
+      <!-- Items injected by JS -->
+    </ul>
+  </div>
+  <footer>Developed by Aswat © <span id="year"></span></footer>
 
   <script>
     const projects = [
@@ -53,25 +100,61 @@
     ];
 
     const emojis = {
-      Software: "🧠",
+      Software: "🌐",
       Hardware: "🔩",
     };
 
-    let current = 0;
-    const projectDiv = document.getElementById("project");
+    const list = document.getElementById("projectList");
+    let currentIndex = 0;
 
-    function rotateProject() {
-      const proj = projects[current];
-      projectDiv.innerHTML = `${emojis[proj.type]} ${proj.name} <span style="font-size: 1rem;">(${proj.type})</span>`;
-      current = (current + 1) % projects.length;
+    function render() {
+      list.innerHTML = ""; // Clear current list
+      
+      // Calculate indexes with wrap-around
+      const aboveIndex = (currentIndex - 1 + projects.length) % projects.length;
+      const belowIndex = (currentIndex + 1) % projects.length;
+
+      // Create above item
+      const above = document.createElement("li");
+      above.className = "above";
+      above.textContent = `${emojis[projects[aboveIndex].type]} ${projects[aboveIndex].name} `;
+      const spanAbove = document.createElement("span");
+      spanAbove.className = "type";
+      spanAbove.textContent = `(${projects[aboveIndex].type})`;
+      above.appendChild(spanAbove);
+
+      // Create center item
+      const center = document.createElement("li");
+      center.className = "center";
+      center.textContent = `${emojis[projects[currentIndex].type]} ${projects[currentIndex].name} `;
+      const spanCenter = document.createElement("span");
+      spanCenter.className = "type";
+      spanCenter.textContent = `(${projects[currentIndex].type})`;
+      center.appendChild(spanCenter);
+
+      // Create below item
+      const below = document.createElement("li");
+      below.className = "below";
+      below.textContent = `${emojis[projects[belowIndex].type]} ${projects[belowIndex].name} `;
+      const spanBelow = document.createElement("span");
+      spanBelow.className = "type";
+      spanBelow.textContent = `(${projects[belowIndex].type})`;
+      below.appendChild(spanBelow);
+
+      list.appendChild(above);
+      list.appendChild(center);
+      list.appendChild(below);
     }
 
-    setInterval(rotateProject, 2500);
-    rotateProject(); // Show first immediately
+    function rotate() {
+      currentIndex = (currentIndex + 1) % projects.length;
+      render();
+    }
 
-    // Set footer year
+    render();
+    setInterval(rotate, 2500);
+
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
-
 </body>
 </html>
